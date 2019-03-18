@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>0318 과제t</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <style>
+    html,
+    body {
+      height: 100%;
+    }
+    body {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-align: center;
+      align-items: center;
+      padding-top: 40px;
+      padding-bottom: 40px;
+      background-color: #f5f5f5;
+    }
+    .form-signin {
+      width: 100%;
+      max-width: 420px;
+      padding: 15px;
+      margin: auto;
+    }
+    .form-label-group {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .form-label-group > input,
+    .form-label-group > label {
+      height: 3.125rem;
+      padding: .75rem;
+    }
+    .form-label-group > label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 100%;
+      margin-bottom: 0; /* Override default `<label>` margin */
+      line-height: 1.5;
+      color: #495057;
+      pointer-events: none;
+      cursor: text; /* Match the input under the label */
+      border: 1px solid transparent;
+      border-radius: .25rem;
+      transition: all .1s ease-in-out;
+    }
+    .form-label-group input::-webkit-input-placeholder {
+      color: transparent;
+    }
+    .form-label-group input:-ms-input-placeholder {
+      color: transparent;
+    }
+    .form-label-group input::-ms-input-placeholder {
+      color: transparent;
+    }
+    .form-label-group input::-moz-placeholder {
+      color: transparent;
+    }
+    .form-label-group input::placeholder {
+      color: transparent;
+    }
+    .form-label-group input:not(:placeholder-shown) {
+      padding-top: 1.25rem;
+      padding-bottom: .25rem;
+    }
+    .form-label-group input:not(:placeholder-shown) ~ label {
+      padding-top: .25rem;
+      padding-bottom: .25rem;
+      font-size: 12px;
+      color: #777;
+    }
+    .zipcode_line > input, .zipcode_line > label {
+      display: inline-block;
+      width: calc(100% - 127.52px);
+    }
+    .zipcode_search_btn {
+      float: right;
+      height: 50px;
+      color: #FFF !important;
+      line-height: 2;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <form class="form-signin">
+    <div class="text-center mb-4">
+      <h1 class="h3 mb-3 font-weight-normal">Sign in</h1>
+    </div>
+    <div class="form-label-group">
+      <input type="text" id="input_id" class="form-control" placeholder="ID" required="" autofocus="">
+      <label for="input_id">ID(영어, 숫자 6~19자리)</label>
+    </div>
+    <div class="form-label-group">
+      <input type="password" id="input_password" class="form-control" placeholder="Password" required="">
+      <label for="input_password">Password(영대소문자, 숫자, 7~20자리)</label>
+    </div>
+    <div class="form-label-group">
+      <input type="text" id="input_name" class="form-control" placeholder="Name" required="">
+      <label for="input_name">Name</label>
+    </div>
+    <div class="form-label-group">
+      <input type="email" id="input_email" class="form-control" placeholder="Email" required="">
+      <label for="input_email">Email</label>
+    </div>
+    <div class="form-label-group zipcode_line">
+      <input type="text" class="form-control" id="input_zipcode" placeholder="Email" readonly required>
+      <label for="input_zipcode">Zipcode</label>
+      <a class="btn btn-secondary zipcode_search_btn" id="zipcode_search">Find Zipcode</a>
+    </div>
+    <div class="form-label-group">
+      <input type="text" id="input_addr" class="form-control" placeholder="Address" required="" readonly>
+      <label for="input_addr">Address</label>
+    </div>
+    <div class="form-label-group">
+      <input type="text" id="input_addrmore" class="form-control" placeholder="Address More">
+      <label for="input_addrmore">Address More</label>
+    </div>
+    <button class="btn btn-lg btn-dark btn-block" type="submit">Sign in</button>
+  </form>
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="http://dmaps.daum.net/map_js_init/postcode.v2.js" crossorigin="anonymous"></script>
+  <script>
+    // 회원가입창 만들기
+    // 1. 아이디
+    // 2. 비밀번호
+    // 3. 이름
+    // 4. 주소 - 우편번호, 주소, 주소 디테일, 우편번호 찾기
+    // 5. 회원가입 확인버튼 - submit
+
+    // * 회원 가입 확인 버튼을 눌렀을 때
+    // 모든 결과를 하나로 합쳐서 alert 창에 띄워주세요. 
+
+    $(function() {
+      $("#zipcode_search, #input_zipcode, #input_addr").click(function() {
+        new daum.Postcode({
+          oncomplete: function(data) {
+            $("#input_zipcode").val(data.zonecode);
+            $("#input_addr").val(data.address);
+            $("#input_addrmore").focus();
+          }
+        }).open();
+      });
+      $('form').submit(function(e) {
+        e.preventDefault;
+        if ($('#input_id').val()=='') {
+          alert('아이디를 입력하세요.');
+          return false;
+        } else if(/^[a-z]+[a-z0-9]{5,19}$/g.test($('#input_id').val()) == false) {
+          alert("ID 형식이 잘못되었습니다.");
+          $("#input_email").focus();
+          return false;
+        } else if ($('#input_password').val()=='') {
+          alert('패스워드를 입력하세요.');
+          return false;
+        } else if(/^[A-Za-z0-9]{6,20}$/.test($('#input_password').val()) == false) {
+          alert("페스워드가 잘못되었습니다.");
+          return false;
+        } else if ($('#input_name').val()=='') {
+          alert('이름를 입력하세요.');
+          return false;
+        } else if ($('#input_email').val()=='') {
+          alert('이메일를 입력하세요.');
+          return false;
+        } else if(/^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i.test($('#input_email').val()) == false) {
+          alert("이메일 형식이 잘못되었습니다.");
+          return false;
+        } else if ($('#input_zipcode').val()=='') {
+          alert('우편번호를 입력하세요.');
+          return false;
+        } else if ($('#input_addr').val()=='') {
+          alert('주소를 입력하세요.');
+          return false;
+        } else {
+          alert(
+          "회원가입 되었습니다!" + "\n" +
+          "ID : " + $("#input_id").val() + "\n" +
+          "Password : " + $("#input_password").val() + "\n" +
+          "Name : " + $("#input_name").val() + "\n" +
+          "Email : " + $("#input_email").val() + "\n" +
+          "Address : (" + $("#input_zipcode").val() + ") " + $("#input_addr").val() + " " + $("#input_addrmore").val()
+        );
+        }
+      });
+    });
+  </script>
+</body>
+</html>
