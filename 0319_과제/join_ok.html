@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Member List</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: 'Material Icons';
+      font-style: normal;
+      font-weight: 400;
+      src: url(https://example.com/MaterialIcons-Regular.eot); /* For IE6-8 */
+      src: local('Material Icons'),
+        local('MaterialIcons-Regular'),
+        url(https://example.com/MaterialIcons-Regular.woff2) format('woff2'),
+        url(https://example.com/MaterialIcons-Regular.woff) format('woff'),
+        url(https://example.com/MaterialIcons-Regular.ttf) format('truetype');
+    }
+    .material-icons {
+      font-family: 'Material Icons';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;  /* Preferred icon size */
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+
+      /* Support for all WebKit browsers. */
+      -webkit-font-smoothing: antialiased;
+      /* Support for Safari and Chrome. */
+      text-rendering: optimizeLegibility;
+
+      /* Support for Firefox. */
+      -moz-osx-font-smoothing: grayscale;
+
+      /* Support for IE. */
+      font-feature-settings: 'liga';
+    }
+    .member_wrap {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+      padding-top: 50px;
+    }
+    .member_wrap h1 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="member_wrap">
+      <h1>MEMBER</h1>
+      <div class="text-right mb-2">
+        <a href="join.html" class="btn btn-dark">회원가입</a>
+      </div>
+      <div class="alert alert-danger text-center" role="alert">
+        empty!
+      </div>
+      <div class="accordion" id="member_list">
+      </div>
+    </div>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script>
+    var storage_key = "member";
+
+    function saveMember() {
+      var query = window.location.search.substr(1);
+      if (query != "") {
+        var data = {};
+        var local_data = localStorage.getItem(storage_key);
+        if (local_data != null) {
+          data = JSON.parse(local_data);
+        }
+
+        var get_url_data = query.split("&");
+        var member_index = Object.keys(data).length;
+        data[member_index] = {};
+        for (var i in get_url_data) {
+          var split_data = get_url_data[i].split("=");
+          var name = split_data[0];
+          var value = decodeURIComponent(split_data[1]);
+          if (name == "input_addr") {
+            value = value.replace(/\+/gi, ' ');
+          }
+          data[member_index][name] = value;
+        }
+        var data_str = JSON.stringify(data);
+        localStorage.setItem(storage_key, data_str);
+
+        loadMember();
+      }
+    }
+
+    function loadMember() {
+      var getDate = localStorage.getItem(storage_key);
+      var data_json = JSON.parse(getDate);
+      for (var index in data_json) {
+        var add_html =
+          '<div class="card">' +
+            '<div class="card-header">' +
+              '<h2 class="mb-0">' +
+                '<button class="btn btn-link collapsed" type="button" data-toggle="collapse" aria-expanded="true">' +
+                '</button>' +
+              '</h2>' +
+            '</div>' +
+            '<div class="collapse" data-parent="#member_list">' +
+              '<div class="card-body">' +
+                '<h6>ID</h6>' +
+                '<p class="input_id"></p>' +
+                '<h6>Password</h6>' +
+                '<p class="input_password"></p>' +
+                '<h6>Name</h6>' +
+                '<p class="input_name"></p>' +
+                '<h6>Email</h6>' +
+                '<p class="input_email"></p>' +
+                '<h6>Address</h6>' +
+                '<p>(<span class="input_zipcode"></span>) <span class="input_addr"></span> <span class="input_addrmore"></span></p>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        add_html = $(add_html);
+        add_html.find(".card-header").attr("id", "heading_" + index);
+        add_html.find("button.btn-link").attr("data-target", "#collapse_" + index);
+        add_html.find("button.btn-link").attr("aria-controls", "#collapse_" + index);
+        add_html.find(".collapse").attr("id", "collapse_" + index);
+        add_html.find(".collapse").attr("aria-labelledby", "heading_" + index);
+        for (var key in data_json[index]) {
+          if (key == "input_id") {
+            add_html.find("button.btn-link").text(data_json[index][key]);
+          }
+          add_html.find("." + key).text(data_json[index][key]);
+          console.log(add_html.find("." + key));
+        }
+        $("#member_list").append(add_html);
+      }
+    }
+    
+    $(function() {
+      saveMember();
+
+      if ($('.card').length == 0) {
+        $(".alert").show();
+      } else {
+        $(".alert").hide();
+      }
+    });
+  </script>
+</body>
+</html>
