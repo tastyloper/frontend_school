@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+  <title>맛집 리뷰 생성기</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script type="text/javascript" src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=cusada1wir&submodules=geocoder"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      width: 100%;
+      height: 100vh;
+    }
+    .page_title {
+      margin-bottom: 0;
+      color: #FFF;
+      font-weight: bold;
+      text-shadow: 3px 3px #000;
+    }
+    .form-inline {
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <h4>맛집 리뷰남기기</h4>
+          <ul id="review_list" class="list-group"></ul>
+          <input type="text" class="form-control" id="review_input" placeholder="리뷰를 남겨주세요.">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="review_save">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="http://dmaps.daum.net/map_js_init/postcode.v2.js"></script>
+  <script>
+
+    var storage_key = "place";
+
+    var map = new naver.maps.Map('map', mapOptions);
+
+    var mapOptions = {
+      center: new naver.maps.LatLng(37.566672, 126.978414),
+      zoom: 4,
+      scaleControl: true,
+      logoControl: true,
+      mapDataControl: true,
+      mapTypeControl: true,
+      zoomControl: true,
+      zoomControlOptions: {
+        position: naver.maps.Position.RIGHT_CENTER
+      },
+    };
+
+    var pageTitleHtml = '<h2 class="page_title">맛집 리뷰 생성기</h2>';
+
+    var pageTitleControl = new naver.maps.CustomControl(pageTitleHtml, {
+      position: naver.maps.Position.TOP_CENTER
+    });
+    pageTitleControl.setMap(map);
+
+    var addressSearchHtml = '<button type="button" class="btn btn-primary m-2" id="btn_adress">맛집 주소 찾기</button>';
+
+    var addressSearchControl = new naver.maps.CustomControl(addressSearchHtml, {
+      position: naver.maps.Position.TOP_LEFT
+    });
+    addressSearchControl.setMap(map);
+    
+    function loadMarkers() {
+      var getDate = localStorage.getItem(storage_key);
+      var data_json = JSON.parse(getDate);
+      for (var index in data_json) {
+        naver.maps.Service.geocode({
+          address: index
+        }, function(status, response) {
+          if (status !== naver.maps.Service.Status.OK) {
+            return alert('Something wrong!');
+          }
+
+          var result = response.result, // 검색 결과의 컨테이너
+              items = result.items; // 검색 결과의 배열
+          var item = items[0];
+          var marker = new naver.maps.Marker({
+            position: new naver.maps.Point(item.point.x, item.point.y),
+            map: map
+          });
+          reviewOpen(marker, item.address);
+        });
+      }
+    }
+
+    function reviewOpen(marker, address) {
+      naver.maps.Event.addListener(marker, 'click', function() {
+        $('#review_list li').remove();
+
+        var modal = $('.modal');
+        modal.find(".modal-title").text(address);
+        modal.modal('show');
+
+        var getDate = localStorage.getItem(storage_key);
+        var data_json = JSON.parse(getDate);
+        for (var index in data_json[address]) {
+          var li_html = '<li class="list-group-item">' + data_json[address][index] + '</li>';
+          $('#review_list').append(li_html);
+        }
+
+        $("#review_input").focus();
+      });
+    }
+
+    $(function() {
+
+      loadMarkers();
+
+      $('#btn_adress').click(function() {
+        new daum.Postcode({
+          oncomplete: function(data) {
+            $("#address").val(data.address);
+
+            naver.maps.Service.geocode({
+              address: data.address
+            }, function(status, response) {
+              if (status !== naver.maps.Service.Status.OK) {
+                return alert('Something wrong!');
+              }
+
+              var result = response.result, // 검색 결과의 컨테이너
+                  items = result.items; // 검색 결과의 배열
+              var item = items[0];
+              var marker = new naver.maps.Marker({
+                position: new naver.maps.Point(item.point.x, item.point.y),
+                map: map
+              });
+              map.setZoom(13);
+              map.setCenter(new naver.maps.Point(item.point.x, item.point.y));
+            });
+          }
+        }).open();
+      });
+
+      $('#review_save').click(function() {
+        var address = $(this).parents(".modal").find(".modal-title").text();
+        var data = {};
+        var getDate = localStorage.getItem(storage_key);
+        if (getDate != null) {
+          data = JSON.parse(getDate);
+        }
+        if (!data.hasOwnProperty(address)) {
+          data[address] = {
+            0: $("#review_input").val()
+          };
+        } else {
+          data[address][Object.keys(data[address]).length] = $("#review_input").val();
+        }
+
+        var form_str = JSON.stringify(data);
+        localStorage.setItem(storage_key, form_str);
+
+        $("#review_input").val("");
+        $('.modal').modal('hide');
+      });
+
+    });
+  </script>
+</body>
+</html>
