@@ -154,6 +154,7 @@
               });
               map.setZoom(13);
               map.setCenter(new naver.maps.Point(item.point.x, item.point.y));
+              reviewOpen(marker, item.address);
             });
           }
         }).open();
